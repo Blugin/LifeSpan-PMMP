@@ -71,14 +71,10 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
 
         //Load lifespan data
         $dataPath = "{$this->getDataFolder()}lifespan.json";
-        if(!file_exists($dataPath)){
+        if(!is_file($dataPath) || ($content = file_get_contents($dataPath)) === false){
             $this->lifespanMap = self::DEFAULTS;
             return;
         }
-
-        $content = file_get_contents($dataPath);
-        if($content === false)
-            throw new \RuntimeException("Unable to load lifespan.json file");
 
         $data = json_decode($content, true);
         if(!is_array($data) || Arr::validate(self::DEFAULTS, function(string $tag) use ($data){ return !is_numeric($data[$tag] ?? null); })){
