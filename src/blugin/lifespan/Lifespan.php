@@ -34,6 +34,7 @@ use blugin\lib\translator\TranslatorHolder;
 use blugin\lifespan\command\overload\ArrowLifespanOverload;
 use blugin\lifespan\command\overload\ItemLifespanOverload;
 use blugin\traits\singleton\SingletonTrait;
+use blugin\utils\arrays\ArrayUtil as Arr;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\entity\EntitySpawnEvent;
@@ -45,6 +46,11 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
 
     public const TAG_ITEM = "Item";
     public const TAG_ARROW = "Arrow";
+
+    public const TAG_ALL = [
+        self::TAG_ITEM,
+        self::TAG_ARROW
+    ];
 
     /** @var int[] */
     private $typeMap;
@@ -82,7 +88,7 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
             throw new \RuntimeException("Unable to load lifespan.json file");
 
         $data = json_decode($content, true);
-        if(!is_array($data) || count($data) < 2 || !isset($data[self::TAG_ITEM]) || !is_numeric($data[self::TAG_ITEM]) || !isset($data[self::TAG_ARROW]) || !is_numeric($data[self::TAG_ARROW])){
+        if(!is_array($data) || Arr::validate(self::TAG_ALL, function(string $tag) use ($data){ return !isset($data[$tag]) || !is_numeric($data[$tag]); })){
             throw new \RuntimeException("Invalid data in lifespan.json file. Must be int array");
         }
         $this->setItemLifespan((int) $data[self::TAG_ITEM]);
