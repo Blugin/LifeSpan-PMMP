@@ -27,3 +27,7 @@ lifespan:
       name: "Arrow"
       aliases: ["a", "arrowentity", "화살"]
       permission: "op"
+    xporb:
+      name: "XpOrb"
+      aliases: ["o", "orb", "experienceorb", "경험치구슬", "구슬"]
+      permission: "op"
