@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace blugin\lifespan;
 
+use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\entity\EntitySpawnEvent;
@@ -37,6 +38,7 @@ class EntitySpawnListener implements Listener{
     public const CLASS_MAP = [
         ItemEntity::class => Lifespan::ITEM,
         Arrow::class => Lifespan::ARROW,
+        ExperienceOrb::class => Lifespan::XP_ORB
     ];
 
     /** @var \ReflectionProperty[] string (mode) => reflection property */
@@ -54,6 +56,12 @@ class EntitySpawnListener implements Listener{
             $arrowLifeProperty = $arrowReflection->getProperty("collideTicks");
             $arrowLifeProperty->setAccessible(true);
             self::$properties[Lifespan::ARROW] = $arrowLifeProperty;
+        }
+        if(!isset(self::$properties[Lifespan::XP_ORB])){
+            $xpOrbReflection = new \ReflectionClass(ExperienceOrb::class);
+            $xpOrbLifeProperty = $xpOrbReflection->getProperty("age");
+            $xpOrbLifeProperty->setAccessible(true);
+            self::$properties[Lifespan::XP_ORB] = $xpOrbLifeProperty;
         }
     }
 

@@ -41,10 +41,12 @@ class Lifespan extends PluginBase implements TranslatorHolder{
 
     public const ITEM = "item";
     public const ARROW = "arrow";
+    public const XP_ORB = "xporb";
 
     public const DEFAULTS = [
         self::ITEM => 6000,
-        self::ARROW => 1200
+        self::ARROW => 1200,
+        self::XP_ORB => 6000
     ];
 
     /** @var int[] (short) */
