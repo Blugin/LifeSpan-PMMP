@@ -37,7 +37,7 @@ use pocketmine\command\CommandSender;
 abstract class LifespanOverload extends NamedOverload implements ICommandHandler{
     public function __construct(BaseCommand $baseCommand, string $name){
         parent::__construct($baseCommand, $name);
-        $this->addParamater((new FloatParameter("seconds"))->setMin(0)->setMax(0x7fff));
+        $this->addParamater((new FloatParameter("seconds"))->setMin(0)->setMax((0x8000 + 6000) / 20));
         $this->setHandler($this);
     }
 

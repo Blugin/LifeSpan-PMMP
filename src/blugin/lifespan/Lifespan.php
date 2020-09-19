@@ -99,13 +99,13 @@ class Lifespan extends PluginBase implements TranslatorHolder{
 
     public function setLifespan(string $mode, int $value) : void{
         if(!isset(self::DEFAULTS[$mode]))
-            throw new \InvalidArgumentException("Mode '{$mode}' is invalid");
+            throw new \InvalidArgumentException("Mode '$mode' is invalid");
 
         if($value < 0)
-            throw new \InvalidArgumentException("Value {$value} is too small, it must be at least 0");
+            throw new \InvalidArgumentException("Value $value is too small, it must be at least 0");
 
-        if($value > 0x7fff)
-            throw new \InvalidArgumentException("Value {$value} is too big, it must be at most 0x7fff");
+        if($value > ($max = 0x8000 + self::DEFAULTS[$mode]))
+            throw new \InvalidArgumentException("Value $value is too big, it must be at most $max");
 
         $this->lifespanMap[$mode] = $value;
     }
