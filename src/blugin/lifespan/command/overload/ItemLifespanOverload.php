@@ -28,19 +28,14 @@ declare(strict_types=1);
 namespace blugin\lifespan\command\overload;
 
 use blugin\lib\command\BaseCommand;
-use blugin\lib\command\overload\Overload;
 use blugin\lifespan\Lifespan;
-use pocketmine\command\CommandSender;
 
 class ItemLifespanOverload extends LifespanOverload{
     public function __construct(BaseCommand $baseCommand){
         parent::__construct($baseCommand, "item");
     }
 
-    /** @param mixed[] $args name => value */
-    public function handle(CommandSender $sender, array $args, Overload $overload) : bool{
-        Lifespan::getInstance()->setItemLifespan((int) ($args["seconds"] * 20));
-        $this->sendMessage($sender, "success", [(string) $args["seconds"]]);
-        return true;
+    public function setLifespan(int $seconds) : void{
+        Lifespan::getInstance()->setItemLifespan($seconds * 20);
     }
 }

@@ -30,7 +30,9 @@ namespace blugin\lifespan\command\overload;
 use blugin\lib\command\BaseCommand;
 use blugin\lib\command\handler\ICommandHandler;
 use blugin\lib\command\overload\NamedOverload;
+use blugin\lib\command\overload\Overload;
 use blugin\lib\command\parameter\defaults\FloatParameter;
+use pocketmine\command\CommandSender;
 
 abstract class LifespanOverload extends NamedOverload implements ICommandHandler{
     public function __construct(BaseCommand $baseCommand, string $name){
@@ -38,4 +40,13 @@ abstract class LifespanOverload extends NamedOverload implements ICommandHandler
         $this->addParamater((new FloatParameter("seconds"))->setMin(0)->setMax(0x7fff));
         $this->setHandler($this);
     }
+
+    /** @param mixed[] $args name => value */
+    public function handle(CommandSender $sender, array $args, Overload $overload) : bool{
+        $this->setLifespan((int) ($args["seconds"]));
+        $this->sendMessage($sender, "success", [(string) $args["seconds"]]);
+        return true;
+    }
+
+    abstract public function setLifespan(int $seconds) : void;
 }
