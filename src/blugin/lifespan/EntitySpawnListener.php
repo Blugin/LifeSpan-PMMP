@@ -51,8 +51,10 @@ class EntitySpawnListener implements Listener{
             if(!$entity instanceof $class)
                 continue;
 
-            $before = self::$properties[$mode]->getValue($entity);
-            self::$properties[$mode]->setValue($entity, min(0x7fff, max(0, $before + Lifespan::DEFAULTS[$mode] - Lifespan::getInstance()->getLifespan(Lifespan::ITEM))));
+            if(self::$properties[$mode]->getValue($entity) > 0)
+                return;
+
+            self::$properties[$mode]->setValue($entity, min(0x7fff, max(0, Lifespan::DEFAULTS[$mode] - Lifespan::getInstance()->getLifespan(Lifespan::ITEM))));
         }
     }
 
