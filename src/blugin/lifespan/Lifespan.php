@@ -52,6 +52,7 @@ class Lifespan extends PluginBase implements TranslatorHolder{
 
     public function onLoad() : void{
         self::$instance = $this;
+        $this->lifespanMap =  self::DEFAULTS;
 
         $this->loadLanguage();
         $this->getBaseCommand();
@@ -67,10 +68,8 @@ class Lifespan extends PluginBase implements TranslatorHolder{
 
         //Load lifespan data
         $dataPath = "{$this->getDataFolder()}lifespan.yml";
-        if(!is_file($dataPath) || ($content = file_get_contents($dataPath)) === false){
-            $this->lifespanMap = self::DEFAULTS;
+        if(!is_file($dataPath) || ($content = file_get_contents($dataPath)) === false)
             return;
-        }
 
         $data = yaml_parse($content);
         if(!is_array($data) || Arr::validate(self::DEFAULTS, function(string $mode) use ($data){ return !is_numeric($data[$mode] ?? null); })){
