@@ -31,8 +31,7 @@ use blugin\lib\command\BaseCommandTrait;
 use blugin\lib\command\listener\AvaliableCommandListener;
 use blugin\lib\translator\traits\TranslatorHolderTrait;
 use blugin\lib\translator\TranslatorHolder;
-use blugin\lifespan\command\overload\ArrowLifespanOverload;
-use blugin\lifespan\command\overload\ItemLifespanOverload;
+use blugin\lifespan\command\overload\LifespanOverload;
 use blugin\traits\singleton\SingletonTrait;
 use blugin\utils\arrays\ArrayUtil as Arr;
 use pocketmine\plugin\PluginBase;
@@ -61,8 +60,9 @@ class Lifespan extends PluginBase implements TranslatorHolder{
     public function onEnable() : void{
         //Register main command with subcommands
         $command = $this->getBaseCommand();
-        $command->addOverload(new ItemLifespanOverload($command));
-        $command->addOverload(new ArrowLifespanOverload($command));
+        foreach(self::DEFAULTS as $mode => $lifespan){
+            $command->addOverload(new LifespanOverload($command, $mode));
+        }
         $this->getServer()->getCommandMap()->register($this->getName(), $command);
 
         //Load lifespan data
@@ -72,7 +72,7 @@ class Lifespan extends PluginBase implements TranslatorHolder{
             return;
         }
 
-        $data = yaml_parse($content, true);
+        $data = yaml_parse($content);
         if(!is_array($data) || Arr::validate(self::DEFAULTS, function(string $mode) use ($data){ return !is_numeric($data[$mode] ?? null); })){
             throw new \RuntimeException("Invalid data in lifespan.json file. Must be int array");
         }

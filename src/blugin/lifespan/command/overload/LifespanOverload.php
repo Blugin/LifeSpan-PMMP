@@ -32,21 +32,23 @@ use blugin\lib\command\handler\ICommandHandler;
 use blugin\lib\command\overload\NamedOverload;
 use blugin\lib\command\overload\Overload;
 use blugin\lib\command\parameter\defaults\FloatParameter;
+use blugin\lifespan\Lifespan;
 use pocketmine\command\CommandSender;
 
-abstract class LifespanOverload extends NamedOverload implements ICommandHandler{
-    public function __construct(BaseCommand $baseCommand, string $name){
-        parent::__construct($baseCommand, $name);
-        $this->addParamater((new FloatParameter("seconds"))->setMin(0)->setMax((0x8000 + 6000) / 20));
+class LifespanOverload extends NamedOverload implements ICommandHandler{
+    public function __construct(BaseCommand $baseCommand, string $mode){
+        if(($default = Lifespan::DEFAULTS[$mode] ?? null) === null)
+            throw new \InvalidArgumentException("Mode '$mode' is invalid");
+
+        parent::__construct($baseCommand, $mode);
+        $this->addParamater((new FloatParameter("seconds"))->setMin(0)->setMax((0x8000 + $default) / 20));
         $this->setHandler($this);
     }
 
     /** @param mixed[] $args name => value */
     public function handle(CommandSender $sender, array $args, Overload $overload) : bool{
-        $this->setLifespan((int) ($args["seconds"]));
+        Lifespan::getInstance()->setLifespan($this->getLabel(), (int) (($args["seconds"]) * 20));
         $this->sendMessage($sender, "success", [(string) $args["seconds"]]);
         return true;
     }
-
-    abstract public function setLifespan(int $seconds) : void;
 }
