@@ -44,22 +44,16 @@ use pocketmine\plugin\PluginBase;
 class Lifespan extends PluginBase implements Listener, TranslatorHolder{
     use TranslatorHolderTrait, BaseCommandTrait, SingletonTrait;
 
-    public const TAG_ITEM = "Item";
-    public const TAG_ARROW = "Arrow";
+    public const ITEM = "Item";
+    public const ARROW = "Arrow";
 
-    public const TAG_ALL = [
-        self::TAG_ITEM,
-        self::TAG_ARROW
+    public const DEFAULTS = [
+        self::ITEM => 6000,
+        self::ARROW => 1200
     ];
 
-    /** @var int[] */
-    private $typeMap;
-
-    /** @var int (short) */
-    private $itemLifespan = 6000;
-
-    /** @var int (short) */
-    private $arrowLifespan = 1200;
+    /** @var int[] (short) */
+    private $lifespanMap;
 
     public function onLoad() : void{
         self::$instance = $this;
@@ -78,8 +72,7 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
         //Load lifespan data
         $dataPath = "{$this->getDataFolder()}lifespan.json";
         if(!file_exists($dataPath)){
-            $this->itemLifespan = 6000;  //default:  5 minutes
-            $this->arrowLifespan = 1200; //default: 60 seconds
+            $this->lifespanMap = self::DEFAULTS;
             return;
         }
 
@@ -88,11 +81,10 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
             throw new \RuntimeException("Unable to load lifespan.json file");
 
         $data = json_decode($content, true);
-        if(!is_array($data) || Arr::validate(self::TAG_ALL, function(string $tag) use ($data){ return !isset($data[$tag]) || !is_numeric($data[$tag]); })){
+        if(!is_array($data) || Arr::validate(self::DEFAULTS, function(string $tag) use ($data){ return !is_numeric($data[$tag] ?? null); })){
             throw new \RuntimeException("Invalid data in lifespan.json file. Must be int array");
         }
-        $this->setItemLifespan((int) $data[self::TAG_ITEM]);
-        $this->setArrowLifespan((int) $data[self::TAG_ARROW]);
+        $this->lifespanMap = $data;
 
         //Register event listeners
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -105,10 +97,7 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
 
         //Save lifespan data
         $dataPath = "{$this->getDataFolder()}lifespan.json";
-        file_put_contents($dataPath, json_encode([
-            self::TAG_ITEM => $this->itemLifespan,
-            self::TAG_ARROW => $this->arrowLifespan
-        ], JSON_PRETTY_PRINT));
+        file_put_contents($dataPath, json_encode($this->lifespanMap, JSON_PRETTY_PRINT));
     }
 
     /**
@@ -123,8 +112,9 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
                 $itemLifeProperty = $itemReflection->getProperty("age");
                 $itemLifeProperty->setAccessible(true);
             }
+
             $before = $itemLifeProperty->getValue($entity);
-            $itemLifeProperty->setValue($entity, min(0x7fff, max(0, $before + 6000 - $this->getItemLifespan())));
+            $itemLifeProperty->setValue($entity, min(0x7fff, max(0, $before + 6000 - $this->getLifespan(self::ITEM))));
         }elseif($entity instanceof Arrow){
             static $arrowLifeProperty = null;
             if($arrowLifeProperty === null){
@@ -134,33 +124,24 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
             }
 
             $before = $arrowLifeProperty->getValue($entity);
-            $arrowLifeProperty->setValue($entity, min(0x7fff, max(0, $before + 1200 - $this->getArrowLifespan())));
+            $arrowLifeProperty->setValue($entity, min(0x7fff, max(0, $before + 1200 - $this->getLifespan(self::ARROW))));
         }
     }
 
-    public function getItemLifespan() : int{
-        return $this->itemLifespan;
+    public function getLifespan(string $mode) : ?int{
+        return $this->lifespanMap[$mode] ?? null;
     }
 
-    public function setItemLifespan(int $value) : void{
-        if($value < 0){
+    public function setLifespan(string $mode, int $value) : void{
+        if(!isset(self::DEFAULTS[$mode]))
+            throw new \InvalidArgumentException("Mode '{$mode}' is invalid");
+
+        if($value < 0)
             throw new \InvalidArgumentException("Value {$value} is too small, it must be at least 0");
-        }elseif($value > 0x7fff){
-            throw new \InvalidArgumentException("Value {$value} is too big, it must be at most 0x7fff");
-        }
-        $this->itemLifespan = $value;
-    }
 
-    public function getArrowLifespan() : int{
-        return $this->arrowLifespan;
-    }
-
-    public function setArrowLifespan(int $value) : void{
-        if($value < 0){
-            throw new \InvalidArgumentException("Value {$value} is too small, it must be at least 0");
-        }elseif($value > 0x7fff){
+        if($value > 0x7fff)
             throw new \InvalidArgumentException("Value {$value} is too big, it must be at most 0x7fff");
-        }
-        $this->arrowLifespan = $value;
+
+        $this->lifespanMap[$mode] = $value;
     }
 }

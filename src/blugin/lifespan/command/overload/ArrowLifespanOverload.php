@@ -36,6 +36,6 @@ class ArrowLifespanOverload extends LifespanOverload{
     }
 
     public function setLifespan(int $seconds) : void{
-        Lifespan::getInstance()->setArrowLifespan($seconds * 20);
+        Lifespan::getInstance()->setLifespan(Lifespan::ARROW, $seconds * 20);
     }
 }

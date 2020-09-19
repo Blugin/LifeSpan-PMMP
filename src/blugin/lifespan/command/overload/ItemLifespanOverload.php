@@ -36,6 +36,6 @@ class ItemLifespanOverload extends LifespanOverload{
     }
 
     public function setLifespan(int $seconds) : void{
-        Lifespan::getInstance()->setItemLifespan($seconds * 20);
+        Lifespan::getInstance()->setLifespan(Lifespan::ITEM, $seconds * 20);
     }
 }
