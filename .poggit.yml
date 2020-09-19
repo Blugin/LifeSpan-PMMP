@@ -13,4 +13,6 @@ projects:
         version: ^1.0.5
       - src: Blugin/virions/SingletonTrait
         version: ^1.0.0
+      - src: Blugin/virions/arrayutils
+        version: ^1.4.0
 ...
