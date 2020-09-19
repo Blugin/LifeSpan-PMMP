@@ -42,7 +42,20 @@ class EntitySpawnListener implements Listener{
     /** @var \ReflectionProperty[] string (mode) => reflection property */
     private static $properties = [];
 
-    private function __construct(){ }
+    private function __construct(){
+        if(!isset(self::$properties[Lifespan::ITEM])){
+            $itemReflection = new \ReflectionClass(ItemEntity::class);
+            $itemLifeProperty = $itemReflection->getProperty("age");
+            $itemLifeProperty->setAccessible(true);
+            self::$properties[Lifespan::ITEM] = $itemLifeProperty;
+        }
+        if(!isset(self::$properties[Lifespan::ARROW])){
+            $arrowReflection = new \ReflectionClass(Arrow::class);
+            $arrowLifeProperty = $arrowReflection->getProperty("collideTicks");
+            $arrowLifeProperty->setAccessible(true);
+            self::$properties[Lifespan::ARROW] = $arrowLifeProperty;
+        }
+    }
 
     /** @priority MONITOR */
     public function onEntitySpawnEvent(EntitySpawnEvent $event) : void{
@@ -59,19 +72,6 @@ class EntitySpawnListener implements Listener{
     }
 
     public static function register(Plugin $plugin) : void{
-        if(!isset(self::$properties[Lifespan::ITEM])){
-            $itemReflection = new \ReflectionClass(ItemEntity::class);
-            $itemLifeProperty = $itemReflection->getProperty("age");
-            $itemLifeProperty->setAccessible(true);
-            self::$properties[Lifespan::ITEM] = $itemLifeProperty;
-        }
-        if(!isset(self::$properties[Lifespan::ARROW])){
-            $arrowReflection = new \ReflectionClass(Arrow::class);
-            $arrowLifeProperty = $arrowReflection->getProperty("collideTicks");
-            $arrowLifeProperty->setAccessible(true);
-            self::$properties[Lifespan::ARROW] = $arrowLifeProperty;
-        }
-
         $plugin->getServer()->getPluginManager()->registerEvents(new self(), $plugin);
     }
 }
