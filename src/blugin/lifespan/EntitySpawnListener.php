@@ -34,35 +34,42 @@ use pocketmine\event\Listener;
 use pocketmine\plugin\Plugin;
 
 class EntitySpawnListener implements Listener{
+    public const CLASS_MAP = [
+        ItemEntity::class => Lifespan::ITEM,
+        Arrow::class => Lifespan::ARROW,
+    ];
+
+    /** @var \ReflectionProperty[] string (mode) => reflection property */
+    private static $properties = [];
+
     private function __construct(){ }
 
     /** @priority MONITOR */
     public function onEntitySpawnEvent(EntitySpawnEvent $event) : void{
         $entity = $event->getEntity();
-        if($entity instanceof ItemEntity){
-            static $itemLifeProperty = null;
-            if($itemLifeProperty === null){
-                $itemReflection = new \ReflectionClass(ItemEntity::class);
-                $itemLifeProperty = $itemReflection->getProperty("age");
-                $itemLifeProperty->setAccessible(true);
-            }
+        foreach(self::CLASS_MAP as $class => $mode){
+            if(!$entity instanceof $class)
+                continue;
 
-            $before = $itemLifeProperty->getValue($entity);
-            $itemLifeProperty->setValue($entity, min(0x7fff, max(0, $before + 6000 - Lifespan::getInstance()->getLifespan(Lifespan::ITEM))));
-        }elseif($entity instanceof Arrow){
-            static $arrowLifeProperty = null;
-            if($arrowLifeProperty === null){
-                $arrowReflection = new \ReflectionClass(Arrow::class);
-                $arrowLifeProperty = $arrowReflection->getProperty("collideTicks");
-                $arrowLifeProperty->setAccessible(true);
-            }
-
-            $before = $arrowLifeProperty->getValue($entity);
-            $arrowLifeProperty->setValue($entity, min(0x7fff, max(0, $before + 1200 - Lifespan::getInstance()->getLifespan(Lifespan::ARROW))));
+            $before = self::$properties[$mode]->getValue($entity);
+            self::$properties[$mode]->setValue($entity, min(0x7fff, max(0, $before + Lifespan::DEFAULTS[$mode] - Lifespan::getInstance()->getLifespan(Lifespan::ITEM))));
         }
     }
 
     public static function register(Plugin $plugin) : void{
+        if(!isset(self::$properties[Lifespan::ITEM])){
+            $itemReflection = new \ReflectionClass(ItemEntity::class);
+            $itemLifeProperty = $itemReflection->getProperty("age");
+            $itemLifeProperty->setAccessible(true);
+            self::$properties[Lifespan::ITEM] = $itemLifeProperty;
+        }
+        if(!isset(self::$properties[Lifespan::ARROW])){
+            $arrowReflection = new \ReflectionClass(Arrow::class);
+            $arrowLifeProperty = $arrowReflection->getProperty("collideTicks");
+            $arrowLifeProperty->setAccessible(true);
+            self::$properties[Lifespan::ARROW] = $arrowLifeProperty;
+        }
+
         $plugin->getServer()->getPluginManager()->registerEvents(new self(), $plugin);
     }
 }
