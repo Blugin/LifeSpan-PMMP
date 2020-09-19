@@ -57,7 +57,7 @@ class EntitySpawnListener implements Listener{
         }
     }
 
-    /** @priority MONITOR */
+    /** @priority LOWEST */
     public function onEntitySpawnEvent(EntitySpawnEvent $event) : void{
         $entity = $event->getEntity();
         foreach(self::CLASS_MAP as $class => $mode){
