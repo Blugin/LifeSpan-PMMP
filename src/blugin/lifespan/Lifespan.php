@@ -40,8 +40,8 @@ use pocketmine\plugin\PluginBase;
 class Lifespan extends PluginBase implements TranslatorHolder{
     use TranslatorHolderTrait, BaseCommandTrait, SingletonTrait;
 
-    public const ITEM = "Item";
-    public const ARROW = "Arrow";
+    public const ITEM = "item";
+    public const ARROW = "arrow";
 
     public const DEFAULTS = [
         self::ITEM => 6000,
