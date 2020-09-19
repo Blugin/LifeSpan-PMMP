@@ -66,13 +66,13 @@ class Lifespan extends PluginBase implements TranslatorHolder{
         $this->getServer()->getCommandMap()->register($this->getName(), $command);
 
         //Load lifespan data
-        $dataPath = "{$this->getDataFolder()}lifespan.json";
+        $dataPath = "{$this->getDataFolder()}lifespan.yml";
         if(!is_file($dataPath) || ($content = file_get_contents($dataPath)) === false){
             $this->lifespanMap = self::DEFAULTS;
             return;
         }
 
-        $data = json_decode($content, true);
+        $data = yaml_parse($content, true);
         if(!is_array($data) || Arr::validate(self::DEFAULTS, function(string $tag) use ($data){ return !is_numeric($data[$tag] ?? null); })){
             throw new \RuntimeException("Invalid data in lifespan.json file. Must be int array");
         }
@@ -89,7 +89,7 @@ class Lifespan extends PluginBase implements TranslatorHolder{
 
         //Save lifespan data
         if(is_array($this->lifespanMap)){
-            file_put_contents("{$this->getDataFolder()}lifespan.json", json_encode($this->lifespanMap, JSON_PRETTY_PRINT));
+            yaml_emit_file("{$this->getDataFolder()}lifespan.yml", ($this->lifespanMap));
         }
     }
 
