@@ -35,13 +35,9 @@ use blugin\lifespan\command\overload\ArrowLifespanOverload;
 use blugin\lifespan\command\overload\ItemLifespanOverload;
 use blugin\traits\singleton\SingletonTrait;
 use blugin\utils\arrays\ArrayUtil as Arr;
-use pocketmine\entity\object\ItemEntity;
-use pocketmine\entity\projectile\Arrow;
-use pocketmine\event\entity\EntitySpawnEvent;
-use pocketmine\event\Listener;
 use pocketmine\plugin\PluginBase;
 
-class Lifespan extends PluginBase implements Listener, TranslatorHolder{
+class Lifespan extends PluginBase implements TranslatorHolder{
     use TranslatorHolderTrait, BaseCommandTrait, SingletonTrait;
 
     public const ITEM = "Item";
@@ -83,8 +79,8 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
         $this->lifespanMap = $data;
 
         //Register event listeners
-        $this->getServer()->getPluginManager()->registerEvents($this, $this);
         AvaliableCommandListener::register($this);
+        EntitySpawnListener::register($this);
     }
 
     public function onDisable() : void{
@@ -94,34 +90,6 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
         //Save lifespan data
         if(is_array($this->lifespanMap)){
             file_put_contents("{$this->getDataFolder()}lifespan.json", json_encode($this->lifespanMap, JSON_PRETTY_PRINT));
-        }
-    }
-
-    /**
-     * @priority MONITOR
-     */
-    public function onEntitySpawnEvent(EntitySpawnEvent $event) : void{
-        $entity = $event->getEntity();
-        if($entity instanceof ItemEntity){
-            static $itemLifeProperty = null;
-            if($itemLifeProperty === null){
-                $itemReflection = new \ReflectionClass(ItemEntity::class);
-                $itemLifeProperty = $itemReflection->getProperty("age");
-                $itemLifeProperty->setAccessible(true);
-            }
-
-            $before = $itemLifeProperty->getValue($entity);
-            $itemLifeProperty->setValue($entity, min(0x7fff, max(0, $before + 6000 - $this->getLifespan(self::ITEM))));
-        }elseif($entity instanceof Arrow){
-            static $arrowLifeProperty = null;
-            if($arrowLifeProperty === null){
-                $arrowReflection = new \ReflectionClass(Arrow::class);
-                $arrowLifeProperty = $arrowReflection->getProperty("collideTicks");
-                $arrowLifeProperty->setAccessible(true);
-            }
-
-            $before = $arrowLifeProperty->getValue($entity);
-            $arrowLifeProperty->setValue($entity, min(0x7fff, max(0, $before + 1200 - $this->getLifespan(self::ARROW))));
         }
     }
 
