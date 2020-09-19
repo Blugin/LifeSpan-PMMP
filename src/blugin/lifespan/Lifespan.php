@@ -96,8 +96,9 @@ class Lifespan extends PluginBase implements Listener, TranslatorHolder{
         $this->getServer()->getCommandMap()->unregister($this->getBaseCommand());
 
         //Save lifespan data
-        $dataPath = "{$this->getDataFolder()}lifespan.json";
-        file_put_contents($dataPath, json_encode($this->lifespanMap, JSON_PRETTY_PRINT));
+        if(is_array($this->lifespanMap)){
+            file_put_contents("{$this->getDataFolder()}lifespan.json", json_encode($this->lifespanMap, JSON_PRETTY_PRINT));
+        }
     }
 
     /**
